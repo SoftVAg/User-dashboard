@@ -17,42 +17,49 @@
       background-color: #f0f0f0;
     }
     .sortable {
-    cursor: pointer;
-    user-select: none;
-    position: relative;
-  }
+      cursor: pointer;
+      user-select: none;
+      position: relative;
+    }
 
-  .sort-icon {
-    font-size: 12px;
-    margin-left: 5px;
-  }
+    .sort-icon {
+      font-size: 12px;
+      margin-left: 5px;
+    }
 
-  .sortable.active-asc .sort-icon::after {
-    content: '↑';
-  }
+    #paginationControls {
+      margin-top: 20px;
+    }
 
-  .sortable.active-desc .sort-icon::after {
-    content: '↓';
-  }
+    #pageInfo {
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
 
   <h1>Posts from JSONPlaceholder</h1>
-    <input type="text" id="searchInput" placeholder="Search posts..." style="width: 300px; padding: 5px; margin-bottom: 10px;">
+
+  <input type="text" id="searchInput" placeholder="Search posts..." style="width: 300px; padding: 5px; margin-bottom: 10px;">
 
   <table id="postsTable">
     <thead>
       <tr>
-      <th class="sortable" data-column="id">Id <span class="sort-icon"></span></th>
-     <th class="sortable" data-column="title">Title <span class="sort-icon"></span></th>
-     <th class="sortable" data-column="body">Body <span class="sort-icon"></span></th>
-     <th class="sortable" data-column="userId">User ID <span class="sort-icon"></span></th>
+        <th class="sortable" data-column="id">Id <span class="sort-icon"></span></th>
+        <th class="sortable" data-column="title">Title <span class="sort-icon"></span></th>
+        <th class="sortable" data-column="body">Body <span class="sort-icon"></span></th>
+        <th class="sortable" data-column="userId">User ID <span class="sort-icon"></span></th>
       </tr>
     </thead>
-    <tbody>
-    </tbody>
+    <tbody></tbody>
   </table>
+
+  <div id="paginationControls">
+    <button id="prevPage">Previous</button>
+    <span id="pageInfo">Page 1</span>
+    <button id="nextPage">Next</button>
+  </div>
+
   <script src="script.js"></script>
 
 </body>
