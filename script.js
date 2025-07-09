@@ -4,92 +4,133 @@ const headers = document.querySelectorAll('.sortable');
 
 const prevButton = document.getElementById('prevPage');
 const nextButton = document.getElementById('nextPage');
-const pageInfo = document.getElementById('pageInfo');
+const pageNumbersContainer = document.getElementById('pageNumbers');
 
 let postsData = [];
 let filteredPosts = [];
 let currentSort = { column: '', order: 'asc' };
 
-let postsPerPage = 10;
 let currentPage = 1;
+let postsPerPage = 10;
+
 
 fetch('https://jsonplaceholder.typicode.com/posts')
   .then(res => res.json())
   .then(data => {
     postsData = data;
     filteredPosts = data;
-    renderTable();
-    updatePaginationButtons();
-  })
-  .catch(err => console.error('Error:', err));
+    showTable();
+    showPagination();
+  });
 
-function renderTable() {
-  tableBody.innerHTML = '';
 
-  const startIndex = (currentPage - 1) * postsPerPage;
-  const endIndex = startIndex + postsPerPage;
-  const postsToDisplay = filteredPosts.slice(startIndex, endIndex);
+function showTable() {
+  tableBody.innerHTML = "";
 
-  postsToDisplay.forEach(post => {
+  const start = (currentPage - 1) * postsPerPage;
+  const end = start + postsPerPage;
+  const pageData = filteredPosts.slice(start, end);
+
+  for (let i = 0; i < pageData.length; i++) {
+    const post = pageData[i];
     const row = document.createElement('tr');
+
     row.innerHTML = `
       <td>${post.id}</td>
       <td>${post.title}</td>
       <td>${post.body}</td>
       <td>${post.userId}</td>
     `;
+
     tableBody.appendChild(row);
-  });
-
-  const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
-  pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+  }
 }
 
-function updatePaginationButtons() {
+
+function showPagination() {
+  pageNumbersContainer.innerHTML = "";
+
   const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
+
+  // Show page numbers
+  for (let i = 1; i <= totalPages; i++) {
+    const btn = document.createElement('button');
+    btn.textContent = i;
+
+    if (i === currentPage) {
+      btn.style.fontWeight = 'bold';
+      btn.style.backgroundColor = '#ddd';
+    }
+
+    btn.addEventListener('click', function () {
+      currentPage = i;
+      showTable();
+      showPagination();
+    });
+
+    pageNumbersContainer.appendChild(btn);
+  }
+
+  
   prevButton.disabled = currentPage === 1;
-  nextButton.disabled = currentPage === totalPages || totalPages === 0;
+  nextButton.disabled = currentPage === totalPages;
 }
+
+prevButton.addEventListener('click', function () {
+  if (currentPage > 1) {
+    currentPage--;
+    showTable();
+    showPagination();
+  }
+});
+
+nextButton.addEventListener('click', function () {
+  const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
+  if (currentPage < totalPages) {
+    currentPage++;
+    showTable();
+    showPagination();
+  }
+});
 
 searchInput.addEventListener('input', function () {
-  let searchTerm = searchInput.value.toLowerCase();
-  let matches = [];
+  const term = searchInput.value.toLowerCase();
+  filteredPosts = [];
 
   for (let i = 0; i < postsData.length; i++) {
-    let post = postsData[i];
-    let title = post.title.toLowerCase();
-    let body = post.body.toLowerCase();
+    const post = postsData[i];
+    const title = post.title.toLowerCase();
+    const body = post.body.toLowerCase();
 
-    if (title.includes(searchTerm) || body.includes(searchTerm)) {
-      matches.push(post);
+    if (title.includes(term) || body.includes(term)) {
+      filteredPosts.push(post);
     }
   }
 
-  filteredPosts = matches;
   currentPage = 1;
 
   if (currentSort.column !== '') {
     sortPosts(currentSort.column);
   } else {
-    renderTable();
-    updatePaginationButtons();
+    showTable();
+    showPagination();
   }
 });
 
-for (var i = 0; i < headers.length; i++) {
-  var header = headers[i];
+for (let i = 0; i < headers.length; i++) {
+  const header = headers[i];
 
   header.addEventListener('click', function () {
-    var columnName = this.dataset.column;
+    const column = this.dataset.column;
 
-    if (currentSort.column === columnName) {
+    if (currentSort.column === column) {
       currentSort.order = currentSort.order === 'asc' ? 'desc' : 'asc';
     } else {
-      currentSort.column = columnName;
+      currentSort.column = column;
       currentSort.order = 'asc';
     }
 
-    for (var j = 0; j < headers.length; j++) {
+    for (let j = 0; j < headers.length; j++) {
       headers[j].classList.remove('active-asc', 'active-desc');
     }
 
@@ -99,41 +140,24 @@ for (var i = 0; i < headers.length; i++) {
       this.classList.add('active-desc');
     }
 
-    sortPosts(columnName);
+    sortPosts(column);
   });
 }
 
 function sortPosts(column) {
-  filteredPosts.sort((a, b) => {
-    const valA = a[column];
-    const valB = b[column];
+  filteredPosts.sort(function (a, b) {
+    let valA = a[column];
+    let valB = b[column];
 
     if (typeof valA === 'string') {
       return currentSort.order === 'asc'
         ? valA.localeCompare(valB)
         : valB.localeCompare(valA);
+    } else {
+      return currentSort.order === 'asc' ? valA - valB : valB - valA;
     }
-
-    return currentSort.order === 'asc' ? valA - valB : valB - valA;
   });
 
-  renderTable();
-  updatePaginationButtons();
+  showTable();
+  showPagination();
 }
-
-prevButton.addEventListener('click', function () {
-  if (currentPage > 1) {
-    currentPage--;
-    renderTable();
-    updatePaginationButtons();
-  }
-});
-
-nextButton.addEventListener('click', function () {
-  const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
-  if (currentPage < totalPages) {
-    currentPage++;
-    renderTable();
-    updatePaginationButtons();
-  }
-});
